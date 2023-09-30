@@ -1,0 +1,105 @@
+﻿@page "/raports"
+
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+@inject UC.TransactionsUseCases.IViewTransactionsUseCase ViewTransactionsUseCase
+@inject UC.PatientsUseCases.IGetPatientByIdUseCase GetPatientByIdUseCase
+@inject UC.IGetServiceByIdUseCase GetServiceByIdUseCase
+@inject UC.TransactionsUseCases.IViewTodaysTransactionsUseCase ViewTodaysTransactionsUseCase
+@inject UC.TransactionsUseCases.IViewTransactionsBetweenUseCase ViewTransactionsBetweenUseCase
+@inject UC.IGetDoctorByIdUseCase GetDoctorByIdUseCase
+@inject UC.IViewDoctorsUseCase ViewDoctorsUseCase
+@inject UC.PatientsUseCases.IViewPatientsUseCase ViewPatientsUseCase
+@inject UC.TransactionsUseCases.IViewTransactionByDoctor ViewTransactionByDoctor
+@inject UC.TransactionsUseCases.IViewTransactionByPatient ViewTransactionByPatient
+
+<h3>Raporty</h3>
+
+<RaportFilters FetchTodaysTransactions="FetchTodaysTransactions" FetchTransactionsByDoctor="FetchTransactionsByDoctor" FetchTransactionsByPatient="FetchTransactionsByPatient" FetchTransactionsFromBetween="FetchTransactionsFromBetween"></RaportFilters>
+@if (transactions != null)
+{
+    @if (transactions.Count() != 0)
+    {
+        <table class="table" id="print">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usługa</th>
+                    <th>Kwota</th>
+                    <th>Imię</th>
+                    <th>Nazwisko</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var transaction in transactions)
+                {
+                    <tr>
+                        <td>@transaction.TransactionId</td>
+                        <td>@GetServiceByIdUseCase.Execute(transaction.ServiceId)?.Name</td>
+                        <td>@GetServiceByIdUseCase.Execute(transaction.ServiceId)?.Price</td>
+                        <td>@GetPatientByIdUseCase.Execute(transaction.PatientId)?.Name</td>
+                        <td>@GetPatientByIdUseCase.Execute(transaction.PatientId)?.LastName</td>
+                        <td>@GetDoctorByIdUseCase.Execute(GetPatientByIdUseCase.Execute(transaction.PatientId)?.DoctorId)?.Name @GetDoctorByIdUseCase.Execute(GetPatientByIdUseCase.Execute(transaction.PatientId)?.DoctorId)?.LastName</td>
+                        <td>@transaction.Timestamp.ToString("g")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="row d-flex justify-content-end mx-3">
+            <h3>Suma: @(@transactions.Sum(transaction => @GetServiceByIdUseCase.Execute(transaction.ServiceId)?.Price))</h3>
+        </div>
+    } else
+    {
+        <p>Brak transakcji w wybranym terminie</p>
+    }
+}
+
+@code {
+    private IEnumerable<Transaction> transactions;
+
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        FetchTodaysTransactions();
+    }
+
+    private void FetchTodaysTransactions()
+    {
+        this.transactions = ViewTodaysTransactionsUseCase.Execute();
+    }
+
+    private void FetchTransactionsFromBetween(TransactionsFromBetweenArgs args)
+    {
+        if (args.start > args.end) {
+            return;
+        }
+        this.transactions = ViewTransactionsBetweenUseCase.Execute(args.start, args.end);
+    }
+
+    private void FetchTransactionsByDoctor(string doctorId)
+    {
+        if (doctorId != null)
+        {
+            this.transactions = ViewTransactionByDoctor.Execute(doctorId);
+        }
+    }
+
+    private void FetchTransactionsByPatient(string patientId){
+        if (patientId != null)
+        {
+            this.transactions = ViewTransactionByPatient.Execute(patientId);
+        }
+    }
+
+    private void PrintRaport(){
+        JSRuntime.InvokeVoidAsync("print");
+    }
+
+    public class TransactionsFromBetweenArgs
+    {
+        public DateTime start { get; set; }
+        public DateTime end { get; set; }
+    }
+}

@@ -1,0 +1,58 @@
+﻿@page "/doctors"
+
+@inject NavigationManager NavigationManager
+@inject UC.IViewDoctorsUseCase ViewDoctorsUseCase
+
+<h3>Zarządzaj lekarzami</h3>
+
+
+@if (doctors != null)
+{
+    @if (doctors.Count() != 0)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nazwa</th>
+                    <th>Nazwisko</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var doctor in doctors)
+                {
+                    <tr>
+                        <td>@doctor.DoctorId</td>
+                        <td>@doctor.Name</td>
+                        <td>@doctor.LastName</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    } else
+    {
+        <p>Dodaj pierwszego lekarza</p>
+    }
+    <button type="button" @onclick="OnClickAddDoctor" class="btn btn-primary">Dodaj lekarza</button>
+}
+
+@code {
+    private List<Doctor> doctors;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        FetchDoctors();
+    }
+
+    private void FetchDoctors()
+    {
+        this.doctors = ViewDoctorsUseCase.Execute()?.ToList();
+    }
+
+    private void OnClickAddDoctor()
+    {
+        NavigationManager.NavigateTo("/doctors/new");
+    }
+
+}

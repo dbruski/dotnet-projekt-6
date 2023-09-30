@@ -1,0 +1,49 @@
+﻿@page "/doctors/new"
+@using UC
+
+@inject NavigationManager NavigationManager
+@inject IAddDoctorUseCase AddDoctorUseCase
+
+<h3>Dodaj lekarza</h3>
+
+@if (doctor != null)
+{
+    <EditForm Model="doctor" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+        <ValidationSummary></ValidationSummary>
+
+        <div class="form-group">
+            <label for="name">Nazwa</label>
+            <InputText id="name" @bind-Value="doctor.Name" class="form-control"></InputText>
+        </div>
+        <div class="form-group">
+            <label for="lastname">Nazwisko</label>
+            <InputText id="lastname" @bind-Value="doctor.LastName" class="form-control"></InputText>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Dodaj</button>
+        <button type="button" class="btn btn-secondary" @onclick="OnCancel">Anuluj</button>
+    </EditForm>
+}
+
+@code {
+    private Doctor doctor;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        doctor = new Doctor();
+    }
+
+    private void OnValidSubmit()
+    {
+        AddDoctorUseCase.Execute(doctor);
+        NavigationManager.NavigateTo("/doctors");
+    }
+
+    private void OnCancel()
+    {
+        NavigationManager.NavigateTo("doctors");
+    }
+}

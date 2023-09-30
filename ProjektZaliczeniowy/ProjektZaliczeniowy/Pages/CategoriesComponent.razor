@@ -1,0 +1,75 @@
+﻿@page "/categories"
+
+@inject NavigationManager NavigationManager
+@inject UC.IViewCategoriesUseCase ViewCategoryUseCase
+@inject UC.IDeleteCategoryUseCase DeleteCategoryUseCase
+<h3>Zarządzaj kategoriami</h3>
+
+
+@if (categories != null)
+{
+    @if (categories.Count() != 0)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nazwa</th>
+                    <th>Opis</th>
+                    <th>Akcje</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var category in categories)
+                {
+                    <tr>
+                        <td>@category.CategoryId</td>
+                        <td>@category.Name</td>
+                        <td>@category.Description</td>
+                        <td>
+                            <div class="d-flex">
+                                <button type="button" class="btn btn-warning" @onclick="@(() => EditCategory(category))">Edytuj</button>
+                                <button type="button" class="btn btn-danger ml-1" @onclick="@(() => DeleteCategory(category.CategoryId))">Usuń</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    } else
+    {
+        <p>Dodaj pierwszą kategorię</p>
+    }
+    <button type="button" @onclick="OnClickAddCategory" class="btn btn-primary">Dodaj kategorię</button>
+}
+
+@code {
+    private List<Category> categories;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        FetchCategories();
+    }
+
+    private void FetchCategories()
+    {
+        this.categories = ViewCategoryUseCase.Execute()?.ToList();
+    }
+
+    private void OnClickAddCategory()
+    {
+        NavigationManager.NavigateTo("/categories/new");
+    }
+
+    private void EditCategory(Category category)
+    {
+        NavigationManager.NavigateTo($"/categories/edit/{category.CategoryId}");
+    }
+
+    private void DeleteCategory(string categoryId)
+    {
+        DeleteCategoryUseCase.DeleteCategory(categoryId);
+        FetchCategories();
+    }
+}

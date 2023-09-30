@@ -1,0 +1,83 @@
+﻿@using static ProjektZaliczeniowy.Pages.RaportsComponent
+@inject IJSRuntime JSRuntime
+@inject UC.IViewDoctorsUseCase ViewDoctorsUseCase
+@inject UC.PatientsUseCases.IViewPatientsUseCase ViewPatientsUseCase
+
+<div class="row d-flex justify-content-between mx-3">
+    <div class="row">
+        <div class="form-group">
+            <label for="startdate">Data rozpoczęcia</label>
+            <input type="date" id="startdate" class="form-control" @bind-value="startDate" />
+        </div>
+        <div class="form-group ml-1">
+            <label for="enddate">Data zakończenia</label>
+            <input type="date" id="enddate" class="form-control" @bind-value="endDate" />
+        </div>
+        <div class="form-group d-flex justify-content-center align-items-end ml-1">
+            <button type="button" class="btn btn-primary" @onclick="@(() => FetchTransactionsFromBetween.InvokeAsync( new TransactionsFromBetweenArgs{ start = startDate, end = endDate }))">Szukaj</button>
+        </div>
+        <div class="form-group d-flex flex-column justify-content-end align-items-center">
+            <label for="doctor">Lekarz</label>
+            <select name="doctor" @bind="selectedDoctorId">
+                <option></option>
+                @foreach (var doc in doctors)
+                {
+                    <option value="@doc.DoctorId">@doc.Name @doc.LastName</option>
+                }
+            </select>
+        </div>
+        <div class="form-group d-flex justify-content-center align-items-end ml-1">
+            <button type="button" class="btn btn-primary" @onclick="@(() => FetchTransactionsByDoctor.InvokeAsync(selectedDoctorId))">Filtruj po lekarzu</button>
+        </div>
+        <div class="form-group d-flex flex-column justify-content-end align-items-center">
+            <label for="patient">Pacjent</label>
+            <select name="patient" @bind="selectedPatientId">
+                <option></option>
+                @foreach (var pat in patients)
+                {
+                    <option value="@pat.PatientId">@pat.Name @pat.LastName</option>
+                }
+            </select>
+        </div>
+        <div class="form-group d-flex justify-content-center align-items-end ml-1">
+            <button type="button" class="btn btn-primary" @onclick="@(() => FetchTransactionsByPatient.InvokeAsync(selectedPatientId))">Filtruj po pacjencie</button>
+        </div>
+    </div>
+    <div class="form-group d-flex justify-content-center align-items-end">
+        <button type="button" class="btn btn-primary" @onclick="@FetchTodaysTransactions">Dzisiejszy</button>
+        <button type="button" class="btn btn-primary ml-1" @onclick="@PrintRaport">Drukuj</button>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public EventCallback<TransactionsFromBetweenArgs>  FetchTransactionsFromBetween{ get; set; }
+    [Parameter]
+    public EventCallback<string> FetchTransactionsByDoctor{ get; set; }
+    [Parameter]
+    public EventCallback<string> FetchTransactionsByPatient{ get; set; }
+    [Parameter]
+    public EventCallback FetchTodaysTransactions{ get; set; }
+
+
+    private List<Doctor> doctors;
+    private List<Patient> patients;
+
+    private string selectedPatientId = null;
+    private string selectedDoctorId = null;
+
+    private DateTime startDate { get; set; }
+    private DateTime endDate { get; set; }
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        doctors = ViewDoctorsUseCase.Execute().ToList();
+        patients = ViewPatientsUseCase.Execute().ToList();
+    }
+
+    private void PrintRaport(){
+        JSRuntime.InvokeVoidAsync("print");
+    }
+}

@@ -1,0 +1,76 @@
+﻿@page "/services"
+
+@inject NavigationManager NavigationManager
+@inject UC.IViewServicesUseCase ViewServicesUseCase
+@inject UC.IGetCategoryByIdUseCase GetCategoryByIdUseCase
+@inject UC.IDeleteServiceUseCase DeleteServiceUseCase
+
+<h3>Zarządzaj usługami</h3>
+
+@if (services != null)
+{
+    @if (services.Count() != 0)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nazwa</th>
+                    <th>Kategoria</th>
+                    <th>Cena</th>
+                    <th>Akcje</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var service in services)
+                {
+                    <tr>
+                        <td>@service.ServiceId</td>
+                        <td>@service.Name</td>
+                        <td>@GetCategoryByIdUseCase.Execute(service.CategoryId)?.Name</td>
+                        <td>@service.Price</td>
+                        <td>
+                            <button type="button" class="btn btn-warning" @onclick="@(() => EditService(service))">Edytuj</button>
+                            <button type="button" class="btn btn-danger ml-1" @onclick="@(() => DeleteService(service.ServiceId))">Usuń</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    } else
+    {
+        <p>Dodaj pierwszą usługę</p>
+    }
+    <button type="button" @onclick="OnClickAddService" class="btn btn-primary">Dodaj usługę</button>
+}
+
+@code {
+    private IEnumerable<Service> services;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        FetchServices();
+    }
+
+    private void FetchServices()
+    {
+        this.services = ViewServicesUseCase.Execute();
+    }
+
+    private void OnClickAddService()
+    {
+        NavigationManager.NavigateTo("/services/new");
+    }
+
+    private void EditService(Service service)
+    {
+        NavigationManager.NavigateTo($"/services/edit/{service.ServiceId}");
+    }
+
+    private void DeleteService(string serviceId)
+    {
+        DeleteServiceUseCase.DeleteService(serviceId);
+        FetchServices();
+    }
+}

@@ -1,0 +1,20 @@
+﻿@inject UC.IViewCategoriesUseCase ViewCategoriesUseCase
+<div>
+    <div>ilosc kategorii: @categoriesAmount</div>
+    <button type="button" @onclick="GetCategoriesAmount" class="btn btn-primary">Pobierz ilość kategorii</button>
+</div>
+
+
+@code {
+    private int categoriesAmount = 0;
+
+    protected override void OnInitialized()
+    {
+        GetCategoriesAmount();
+    }
+
+    private void GetCategoriesAmount()
+    {
+        this.categoriesAmount = ViewCategoriesUseCase.Execute().ToList().Count();
+    }
+}

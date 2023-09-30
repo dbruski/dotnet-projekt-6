@@ -1,0 +1,70 @@
+﻿@page "/transactions"
+
+@inject NavigationManager NavigationManager
+@inject UC.TransactionsUseCases.IViewTransactionsUseCase ViewTransactionsUseCase
+@inject UC.PatientsUseCases.IGetPatientByIdUseCase GetPatientByIdUseCase
+@inject UC.IGetServiceByIdUseCase GetServiceByIdUseCase
+@inject UC.IGetDoctorByIdUseCase GetDoctorByIdUseCase
+
+<h3>Transakcje</h3>
+
+<button type="button" @onclick="OnClickAddTransaction" class="btn btn-primary mb-5">Dodaj usługę</button>
+@if (transactions != null)
+{
+    @if (transactions.Count() != 0)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Usługa</th>
+                    <th>Kwota</th>
+                    <th>Imię</th>
+                    <th>Nazwisko</th>
+                    <th>Lekarz</th>
+                    <th>Timestamp</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var transaction in transactions)
+                {
+                    <tr>
+                        <td>@transaction.TransactionId</td>
+                        <td>@GetServiceByIdUseCase.Execute(transaction.ServiceId)?.Name</td>
+                        <td>@GetServiceByIdUseCase.Execute(transaction.ServiceId)?.Price</td>
+                        <td>@GetPatientByIdUseCase.Execute(transaction.PatientId)?.Name</td>
+                        <td>@GetPatientByIdUseCase.Execute(transaction.PatientId)?.LastName</td>
+                        <td>@GetDoctorByIdUseCase.Execute(GetPatientByIdUseCase.Execute(transaction.PatientId)?.DoctorId)?.Name @GetDoctorByIdUseCase.Execute(GetPatientByIdUseCase.Execute(transaction.PatientId)?.DoctorId)?.LastName</td>
+                        <td>@transaction.Timestamp.ToString("g")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <div class="row d-flex justify-content-end mx-3">
+            <h3>Suma: @(@transactions.Sum(transaction => @GetServiceByIdUseCase.Execute(transaction.ServiceId)?.Price))</h3>
+        </div>
+    } else
+    {
+        <p>Dodaj pierwszą transakcję</p>
+    }
+}
+
+@code {
+    private IEnumerable<Transaction> transactions;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        FetechTransactions();
+    }
+
+    private void FetechTransactions()
+    {
+        this.transactions = ViewTransactionsUseCase.Execute();
+    }
+
+    private void OnClickAddTransaction()
+    {
+        NavigationManager.NavigateTo("/transactions/new");
+    }
+}

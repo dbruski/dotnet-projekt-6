@@ -1,0 +1,66 @@
+﻿@page "/transactions/new"
+
+@inject NavigationManager NavigationManager
+@inject UC.PatientsUseCases.IViewPatientsUseCase ViewPatientsUseCase
+@inject UC.IViewServicesUseCase ViewServicesUseCase
+@inject UC.TransactionsUseCases.IAddTransactionUseCase AddTransactionUseCase
+
+<h3>Dodaj transakcję</h3>
+
+@if (transaction != null)
+{
+    <EditForm Model="transaction" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+        <ValidationSummary></ValidationSummary>
+
+        <div class="form-group">
+            <label for="patient">Pacjent</label>
+            <select name="patient" @bind="transaction.PatientId">
+                <option></option>
+                @foreach (var pat in patients)
+                {
+                    <option value="@pat.PatientId">@pat.Name @pat.LastName</option>
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="service">Usługa</label>
+            <select name="service" @bind="transaction.ServiceId">
+                <option></option>
+                @foreach (var serv in services)
+                {
+                    <option value="@serv.ServiceId">@serv.Name - @serv.Price</option>
+                }
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Dodaj</button>
+        <button type="button" class="btn btn-secondary" @onclick="OnCancel">Anuluj</button>
+    </EditForm>
+}
+
+@code {
+    private Transaction transaction;
+    private IEnumerable<Patient> patients;
+    private IEnumerable<Service> services;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        transaction = new Transaction();
+        patients = ViewPatientsUseCase.Execute();
+        services = ViewServicesUseCase.Execute();
+    }
+
+    private void OnValidSubmit()
+    {
+        AddTransactionUseCase.Execute(transaction);
+        NavigationManager.NavigateTo("/transactions");
+    }
+
+    private void OnCancel()
+    {
+        NavigationManager.NavigateTo("/transactions");
+    }
+}

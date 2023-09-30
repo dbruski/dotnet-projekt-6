@@ -1,0 +1,85 @@
+﻿@page "/patients"
+
+@inject NavigationManager NavigationManager
+@inject UC.PatientsUseCases.IViewPatientsUseCase ViewPatientsUseCase
+@inject UC.PatientsUseCases.IDeletePatientUseCase DeletePatientUseCase
+@inject UC.IGetDoctorByIdUseCase GetDoctorByIdUseCase
+
+<h3>Zarządzaj pacjentami</h3>
+
+
+@if (patients != null)
+{
+    @if (patients.Count() != 0)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Imię</th>
+                    <th>Nazwisko</th>
+                    <th>Data urodzenia</th>
+                    <th>PESEL</th>
+                    <th>Numer telefonu</th>
+                    <th>Lekarz</th>
+                    <th>Akcje</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var patient in patients)
+                {
+                    <tr>
+                        <td>@patient.PatientId</td>
+                        <td>@patient.Name</td>
+                        <td>@patient.LastName</td>
+                        <td>@patient.Birthday.ToString("dd/MM/yyyy")</td>
+                        <td>@patient.Pesel</td>
+                        <td>@patient.PhoneNumber</td>
+                        <td>@GetDoctorByIdUseCase.Execute(patient.DoctorId)?.Name @GetDoctorByIdUseCase.Execute(patient.DoctorId)?.LastName</td>
+                        <td>
+                            <div class="d-flex">
+                                <button type="button" class="btn btn-warning" @onclick="@(() => EditPatient(patient))">Edytuj</button>
+                                <button type="button" class="btn btn-danger ml-1" @onclick="@(() => DeletePatient(patient.PatientId))">Usuń</button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    } else
+    {
+        <p>Dodaj pierwszego pacjenta</p>
+    }
+    <button type="button" @onclick="OnClickAddPatient" class="btn btn-primary">Dodaj pacjenta</button>
+}
+
+@code {
+    private List<Patient> patients;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        FetchPatients();
+    }
+
+    private void FetchPatients()
+    {
+        this.patients = ViewPatientsUseCase.Execute()?.ToList();
+    }
+
+    private void OnClickAddPatient()
+    {
+        NavigationManager.NavigateTo("/patients/new");
+    }
+
+    private void EditPatient(Patient patient)
+    {
+        NavigationManager.NavigateTo($"/patients/edit/{patient.PatientId}");
+    }
+
+    private void DeletePatient(string patientId)
+    {
+        DeletePatientUseCase.DeletePatient(patientId);
+        FetchPatients();
+    }
+}
