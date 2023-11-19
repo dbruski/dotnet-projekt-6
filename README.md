@@ -1,3 +1,5 @@
+Projekt przekopiowany z prywatnego repozytorium uczelnianego, stąd widnieje tutaj tylko jeden commit, historia commitów znajduje się na screenie na samym dole readme.
+
 # Projekt: ASP MVC wymagania
 
 | Termin oddania (bez przedłużania) | Punkty     |
@@ -54,3 +56,8 @@ Program powinien zawierać:
 - [Overview of ASP.NET Core MVC](https://docs.microsoft.com/en-gb/aspnet/core/mvc/overview?view=aspnetcore-3.1)
 - [CodeProject: Learn MVC Project in 7 days](https://www.codeproject.com/Articles/866143/Learn-MVC-Project-in-days-Day)
 - [Yogi Hosting: ASP.NET Core](https://www.yogihosting.com/aspnet-core-introduction/) 
+
+# Commity
+![screencapture-github-TBorzyszkowskiForEducation-005-projekt-dbruski-commits-main-2023-11-19-15_10_39](https://github.com/dbruski/dotnet-projekt-6/assets/58916806/6f63273a-111c-4ea7-b92e-cecaecfe8b2a)
+
+
